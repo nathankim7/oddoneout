@@ -1,3 +1,5 @@
 **/.vscode/*
 *.txt
 *.pkl
+**/__pycache__/*
+node_modules/

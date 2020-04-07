@@ -6,8 +6,8 @@ from nltk.stem import WordNetLemmatizer
 
 lemmatizer = WordNetLemmatizer()
 
-def vectorize(path, lemma_only=False, pkl=False, pklpath='vector.pkl'):
-    with open(path) as f:
+def vectorize(path, limit=20000, lemma_only=False, pkl=False, pklpath='vector.pkl'):
+    with open(path, encoding='utf-8') as f:
         reader = csv.reader(f, delimiter=' ', quoting=csv.QUOTE_NONE)
         arr = np.array([line for line in reader if (not lemma_only) or lemmatizer.lemmatize(line[0]) == line[0]])
         index_to_word = arr[:, 0]

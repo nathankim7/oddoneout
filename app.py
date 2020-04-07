@@ -1,4 +1,4 @@
-import flask
+from flask import Flask, request, jsonify, Response, render_template
 from annoy import AnnoyIndex
 import numpy as np
 from vectorize import vectorize
@@ -8,11 +8,11 @@ import random
 from nltk.stem import PorterStemmer
 
 INIT = False
-pklpath = 'glove.6B.50d.pkl'
+pklpath = 'glove.6B.100d.pkl'
 stemmer = PorterStemmer()
 
 if (INIT):
-    index_to_word, word_to_index, vec = vectorize('glove.6B.50d.txt', True, True, pklpath)
+    index_to_word, word_to_index, vec = vectorize('glove.6B.50d.txt', limit=20000, lemma_only=True, pkl=True, pklpath=pklpath)
 else:
     with open(pklpath, 'rb') as f:
         (index_to_word, word_to_index, vec) = pickle.load(f)
@@ -71,8 +71,26 @@ def generate_centroid(length, odd_dist=100, start=None):
     result.append(candidates[odd_dist - 1])
     return [index_to_word[i] for i in result]
 
-inp = input()
+# inp = input()
 
-while inp != 'quit':
-    print(generate_ann(5))
-    inp = input()
+# while inp != 'quit':
+#     print(generate_ann(5))
+#     inp = input()
+
+app = Flask(__name__, static_folder='static')
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@app.route('/generate', methods=['GET'])
+def generate():
+    generator = request.args.get('generator')
+    length = int(request.args.get('length'))
+
+    if generator == 'ann':
+        return jsonify(generate_ann(length))
+    elif generator == 'centroid':
+        return jsonify(generate_centroid(length))
+    else:
+        return Response(status=400)
