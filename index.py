@@ -32,21 +32,21 @@ print('ann built!')
 def cos(u, v):
     return np.dot(u, v) / (math.sqrt(np.dot(u, u)) * math.sqrt(np.dot(v, v)))
 
-def generate_ann(length, odd_dist=100, start=None):
+def generate_ann(length, outlier_dist=100, start=None):
     if start == None:
         start = random.randrange(0, vec.shape[0])
 
-    candidates = a.get_nns_by_item(start, odd_dist, include_distances=True)
+    candidates = a.get_nns_by_item(start, outlier_dist, include_distances=True)
     candidates = [index_to_word[i] for i in candidates]
     result = candidates[:(length - 1)]
-    result.append(candidates[odd_dist - 1])
+    result.append(candidates[outlier_dist - 1])
     return result
 
-def generate_centroid(length, odd_dist=100, start=None):
+def generate_centroid(length, outlier_dist=100, start=None):
     if start == None:
         start = random.randrange(0, vec.shape[0])
 
-    candidates = a.get_nns_by_item(start, odd_dist)
+    candidates = a.get_nns_by_item(start, outlier_dist)
     result = [candidates[0]]
     stems = [stemmer.stem(index_to_word[candidates[0]])]
     vecs = np.zeros((length - 1, vec.shape[1]))
@@ -69,7 +69,7 @@ def generate_centroid(length, odd_dist=100, start=None):
         result.append(maxind)
         stems.append(stemmer.stem(index_to_word[maxind]))
 
-    result.append(candidates[odd_dist - 1])
+    result.append(candidates[outlier_dist - 1])
     return [index_to_word[i] for i in result]
 
 # inp = input()
@@ -88,11 +88,12 @@ def index():
 def generate():
     generator = request.args.get('generator')
     length = int(request.args.get('length'))
+    dist = int(request.args.get('dist'))
 
     if generator == 'ann':
-        return jsonify(generate_ann(length))
+        return jsonify(generate_ann(length, outlier_dist=dist))
     elif generator == 'centroid':
-        return jsonify(generate_centroid(length))
+        return jsonify(generate_centroid(length, outlier_dist=dist))
     else:
         return Response(status=400)
 

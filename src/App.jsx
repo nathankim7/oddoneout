@@ -18,7 +18,7 @@ class App extends React.Component {
         let res = [...arr];
 
         for (let i = 0; i < arr.length - 1; i++) {
-            let j = Math.floor(Math.random() * (arr.length - i));
+            let j = i + Math.floor(Math.random() * (arr.length - i));
             let temp = res[i]; res[i] = res[j]; res[j] = temp;
         }
 
@@ -30,7 +30,7 @@ class App extends React.Component {
     }
 
     fetchWords = async (generator, length) => {
-        let res = await fetch('/generate?generator=' + generator + '&length=' + length);
+        let res = await fetch('/generate?generator=' + generator + '&length=' + length + '&dist=75');
         let arr = await res.json();
         let shuffled = this.shuffle(arr);
 
