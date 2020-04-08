@@ -10,7 +10,6 @@ pylint = "*"
 flask = "*"
 numpy = "*"
 annoy = "*"
-spacy = "*"
 nltk = "*"
 
 [requires]

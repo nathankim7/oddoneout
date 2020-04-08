@@ -7,7 +7,8 @@
     "build": "webpack --progress --mode production",
     "dev-build": "webpack --progress --mode development",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "webpack --progress --mode development --watch"
+    "watch": "webpack --progress --mode development --watch",
+    "now-build": "webpack --progress --mode development"
   },
   "keywords": [],
   "author": "",

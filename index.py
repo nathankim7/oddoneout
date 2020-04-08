@@ -6,6 +6,7 @@ import pickle
 import math
 import random
 from nltk.stem import PorterStemmer
+import os
 
 INIT = False
 pklpath = 'glove.6B.100d.pkl'
@@ -94,3 +95,6 @@ def generate():
         return jsonify(generate_centroid(length))
     else:
         return Response(status=400)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)), debug=True)

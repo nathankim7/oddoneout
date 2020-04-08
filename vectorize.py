@@ -1,7 +1,6 @@
 import csv
 import numpy as np
 import pickle
-import spacy
 from nltk.stem import WordNetLemmatizer
 
 lemmatizer = WordNetLemmatizer()

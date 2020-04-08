@@ -5,7 +5,7 @@ module.exports = {
     entry: path.resolve(__dirname, 'src', 'App.jsx'),
     output: {
         filename: 'App.js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'static')
     },
     module: {
         rules: [
