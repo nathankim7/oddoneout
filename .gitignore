@@ -1,6 +1,8 @@
 **/.vscode/*
 *.txt
 *.pkl
+*.png
+*.jpg
 **/__pycache__/*
 node_modules/
 .now
