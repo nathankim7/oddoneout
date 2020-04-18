@@ -37,7 +37,7 @@ def generate_ann(length, outlier_dist=100, start=None):
         start = random.randrange(0, vec.shape[0])
 
     candidates = a.get_nns_by_item(start, outlier_dist, include_distances=True)
-    candidates = [index_to_word[i] for i in candidates]
+    candidates = [index_to_word[i] for i in candidates[0]]
     result = candidates[:(length - 1)]
     result.append(candidates[outlier_dist - 1])
     return result
