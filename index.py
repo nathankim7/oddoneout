@@ -18,7 +18,7 @@ else:
     with open(pklpath, 'rb') as f:
         (index_to_word, word_to_index, vec) = pickle.load(f)
 
-vec = vec[:5001]
+vec_short = vec[:5001]
 print('embeddings loaded!')
 a = AnnoyIndex(vec.shape[1], 'angular')
 
@@ -32,6 +32,23 @@ print('ann built!')
 def cos(u, v):
     return np.dot(u, v) / (math.sqrt(np.dot(u, u)) * math.sqrt(np.dot(v, v)))
 
+def find_outlier(tokens):
+    minsim = 2
+    mini = -1
+    vecs = np.array([vec[word_to_index[token.lower()]] for token in tokens])
+
+    for i in range(len(tokens)):
+        mask = np.ones(len(tokens), dtype=bool)
+        mask[i] = False
+        avg_vec = np.sum(vecs[mask], axis=0) / (len(tokens) - 1)
+        dist = cos(vecs[i], avg_vec)
+
+        if dist < minsim:
+            minsim = dist
+            mini = i
+
+    return tokens[mini]
+
 def generate_ann(length, outlier_dist=100, start=None):
     if start == None:
         start = random.randrange(0, vec.shape[0])
@@ -44,28 +61,28 @@ def generate_ann(length, outlier_dist=100, start=None):
 
 def generate_centroid(length, outlier_dist=100, start=None):
     if start == None:
-        start = random.randrange(0, vec.shape[0])
+        start = random.randrange(0, vec_short.shape[0])
 
     candidates = a.get_nns_by_item(start, outlier_dist)
     result = [candidates[0]]
     stems = [stemmer.stem(index_to_word[candidates[0]])]
-    vecs = np.zeros((length - 1, vec.shape[1]))
-    vecs[0] = vec[candidates[0]]
+    vecs = np.zeros((length - 1, vec_short.shape[1]))
+    vecs[0] = vec_short[candidates[0]]
 
     for i in range(1, length - 1):
         centroid = vecs.sum(axis=0) / (i + 1)
         maxi = 0
         maxind = 0
 
-        for j in range(vec.shape[0]):
+        for j in range(vec_short.shape[0]):
             if (j not in result) and (stemmer.stem(index_to_word[j]) not in stems):
-                sim = cos(centroid, vec[j])
+                sim = cos(centroid, vec_short[j])
 
                 if sim > maxi:
                     maxi = sim
                     maxind = j
         
-        vecs[i] = vec[maxind]
+        vecs[i] = vec_short[maxind]
         result.append(maxind)
         stems.append(stemmer.stem(index_to_word[maxind]))
 
@@ -96,6 +113,11 @@ def generate():
         return jsonify(generate_centroid(length, outlier_dist=dist))
     else:
         return Response(status=400)
+
+@app.route('/solve', methods=['POST'])
+def solve():
+    json = request.get_json()
+    return find_outlier(json['tokens'])
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)), debug=True)

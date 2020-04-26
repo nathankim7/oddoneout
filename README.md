@@ -24,7 +24,7 @@ For this script, each token was indexed according to its line number in the file
 
 Each question consists of *n* words, generated from a single root word: *n - 1* words (including the root word) in the similar set, which are fairly close substitutes in meaning for the root word, and one outlier, which is (adjustably) farther. The similar set can be generated in two ways:
 
-### Similar Set
+### Similar Set Generation
 
 The first and significantly faster option is to use an approximate nearest neighbours (ANN) tree provided by the Annoy library; in this case the similar set consists of the *n - 2* nearest neighbours to the root word. However, since in this method candidacy for the similar set depends on similarity to the root word alone, the following situation is prone to occur, where two words share no similarity other than through the root word:
 
@@ -39,12 +39,17 @@ The other option is what I have designated as the 'centroid' method, and avoids 
 1. Compute the centroid of all current words in the similar set.
 2. Find the nearest neighbour to the similar set centroid using brute force iteration, and add that token to the similar set.
 
-The effect of this method is to ensure that all words currently in the set, and not just the root word, influence the selection of the next word, resulting in sets that more closely coalesce around a common theme. I'm sure there must be a way to achieve this without brute force... if you have a better way, please let me know!
+The effect of this method is to ensure that all words currently in the set, and not just the root word, influence the selection of the next word, resulting in sets that more closely coalesce around a common theme. With an *O(n<sup>2</sup>)* time complexity, however, this method is currently capped at searching only the 5000 most common words. I'm sure there must be a way to achieve this without brute force... if you have a better way, please let me know!
 
-### Outlier
+### Outlier Generation
 
 The outlier is generated using a value designated as the *outlier distance*, or *d*. It is generated as the *d*'th nearest neighbour to the root word, meaning that higher values of *d* will create outliers that are more conspicuously different from the similar set (and therefore easier questions), while lower values of *d* will do the opposite.
 
+### Outlier Detection
+
+The site can detect outliers using the cluster prototype method introduced by [Santus et. al](https://www.aclweb.org/anthology/P18-2088/).
+
 ## Next Steps
 
-* Reverse solving: input any number of words and have the outlier fed back to you in seconds!
+* Word vector visualization: the vectors of all the words in the question will be visualized relative to the root word on a unit circle quadrant based on their cosine distance, which will illustrate the impact of varying outlier distance.
+* Explore better similarity metrics, i.e. the APSynP metric introduced by [Santus et. al](https://www.aclweb.org/anthology/P18-2088/).
