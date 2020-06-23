@@ -32,22 +32,30 @@ print('ann built!')
 def cos(u, v):
     return np.dot(u, v) / (math.sqrt(np.dot(u, u)) * math.sqrt(np.dot(v, v)))
 
-def find_outlier(tokens):
-    minsim = 2
-    mini = -1
+def cluster_similarities(tokens):
     vecs = np.array([vec[word_to_index[token.lower()]] for token in tokens])
+    res = []
 
     for i in range(len(tokens)):
         mask = np.ones(len(tokens), dtype=bool)
         mask[i] = False
         avg_vec = np.sum(vecs[mask], axis=0) / (len(tokens) - 1)
         dist = cos(vecs[i], avg_vec)
+        res.append(dist)
 
-        if dist < minsim:
-            minsim = dist
+    return res
+
+def find_outlier(tokens):
+    minsim = 2
+    mini = -1
+    sim = cluster_similarities(tokens)
+    
+    for i in range(len(sim)):
+        if sim[i] < minsim:
+            minsim = sim[i]
             mini = i
 
-    return tokens[mini]
+    return { 'outlier': tokens[mini], 'sim': sim }
 
 def generate_ann(length, outlier_dist=100, start=None):
     if start == None:
@@ -107,17 +115,22 @@ def generate():
     length = int(request.args.get('length'))
     dist = int(request.args.get('dist'))
 
+    tokens = []
+
     if generator == 'ann':
-        return jsonify(generate_ann(length, outlier_dist=dist))
+        tokens = generate_ann(length, outlier_dist=dist)
     elif generator == 'centroid':
-        return jsonify(generate_centroid(length, outlier_dist=dist))
+        tokens = generate_centroid(length, outlier_dist=dist)
     else:
         return Response(status=400)
+
+    sim = cluster_similarities(tokens)
+    return jsonify({ 'tokens': tokens, 'sim': sim })
 
 @app.route('/solve', methods=['POST'])
 def solve():
     json = request.get_json()
-    return find_outlier(json['tokens'])
+    return jsonify(find_outlier(json['tokens']))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)), debug=True)

@@ -1,6 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import classNames from 'classnames'
+import Chart from 'chart.js'
+
+Chart.defaults.global.defaultFontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, 'Open Sans', 'Helvetica Neue', sans-serif";
+Chart.defaults.global.defaultFontSize = 16;
 
 class App extends React.Component {
     constructor(props) {
@@ -8,6 +12,7 @@ class App extends React.Component {
         this.state = {
             mode: 0,
             words: [],
+            sim: [6, 2, 3, 4, 5],
             root: 0,
             submitted: false,
             outlier: -1,
@@ -17,6 +22,8 @@ class App extends React.Component {
             dist: 75,
             options: false
         }
+
+        this.chartRef = React.createRef();
     }
 
     shuffle = arr => {
@@ -31,17 +38,18 @@ class App extends React.Component {
     }
 
     fetchWords = async () => {
-        let res = await fetch('/generate?generator=' + this.state.generator + '&length=' + this.state.length + '&dist=' + this.state.dist);
-        let arr = await res.json();
-        let shuffled = this.shuffle(arr);
+        var res = await fetch('/generate?generator=' + this.state.generator + '&length=' + this.state.length + '&dist=' + this.state.dist);
+        var json = await res.json();
+        var shuffled = this.shuffle(json.tokens);
 
         this.setState({ 
             words: shuffled, 
-            root: shuffled.indexOf(arr[0]), 
-            outlier: shuffled.indexOf(arr[this.state.length - 1]),
+            root: shuffled.indexOf(json.tokens[0]), 
+            outlier: shuffled.indexOf(json.tokens[this.state.length - 1]),
             submitted: false 
         });
-        console.log(this.state);
+        console.log(json);
+        this.draw(json.tokens, json.sim);
     }
 
     fetchSolve = async () => {
@@ -50,13 +58,43 @@ class App extends React.Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 'tokens': this.state.words })
         });
-        let answer = await res.text();
-        let temp = this.state.words.indexOf(answer)
+        let json = await res.json();
+        let temp = this.state.words.indexOf(json.outlier);
 
         this.setState({
             outlier: temp,
             submitted: true
         });
+
+        this.draw(this.state.words, json.sim);
+    }
+
+    draw = (labels, data) => {
+        this.state.chart.data.labels = labels;
+        this.state.chart.data.datasets[0].data = data;
+        this.state.chart.update();
+    }
+
+    componentDidMount() {
+        var chart = new Chart(this.chartRef.current, {
+            type: 'horizontalBar',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: []
+                }]
+            },
+            options: { 
+                legend: { display: false },
+                scales: { xAxes: [{ 
+                    ticks: { beginAtZero: true },
+                    scaleLabel: { display: true, labelString: 'Cluster Similarity' },
+                    position: 'top'
+                }]} 
+            }
+        });
+
+        this.setState({ chart: chart });
     }
 
     switchMode = mode => {
@@ -119,7 +157,7 @@ class App extends React.Component {
                         <button onClick={() => this.setState({ options: !this.state.options })} className="bn black-60 bg-white outline-0">{this.state.options ? '-' : '+'}</button>
                     </div>
                     <form className="flex flex-column items-center w-100" onSubmit={(e) => { this.fetchWords(); e.preventDefault(); }}>
-                    {this.state.options && 
+                        {this.state.options && 
                         <div className="flex-column items-center w-100">
                             <div className="flex flex-column w-100 mb3 pa2 bg-black-20 bn br3">
                                 <div className="flex-auto items-center b mid-gray">Generator:</div>
@@ -171,7 +209,7 @@ class App extends React.Component {
                         <input type="submit" className="bn f5 dim br3 pa2 mv3 white bg-light-red" value="Generate!" />
                     </form>
                     <div className="flex flex-row flex-wrap justify-center">{choices}</div>
-                </div> : 
+                </div> : // generate ends here
                 <div className="w-100 flex flex-column items-center">
                     <input type="text" 
                         id="input"
@@ -208,6 +246,9 @@ class App extends React.Component {
                         </ul>
                     </div>
                 </div>}
+                <div className={classNames('w-100 relative mt3 mr3', { 'dn': !this.state.submitted })}>
+                    <canvas ref={this.chartRef}></canvas>
+                </div>
             </div>
         );
     }
