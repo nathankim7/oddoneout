@@ -12,7 +12,8 @@ class App extends React.Component {
         this.state = {
             mode: 0,
             words: [],
-            sim: [6, 2, 3, 4, 5],
+            sim: [],
+            errors: [],
             root: 0,
             submitted: false,
             outlier: -1,
@@ -67,6 +68,11 @@ class App extends React.Component {
             return false;
 
         let json = await res.json();
+
+        if (json.errors) {
+            this.setState({ errors: json.errors, submitted: true });
+            return false;
+        }
 
         this.setState({
             outlier: this.state.words.indexOf(json.outlier),
@@ -141,9 +147,10 @@ class App extends React.Component {
         })
 
         const inputs = this.state.words.map((word, idx) => {
-            var css = classNames('ph2 pt2 pb1', {
+            var css = classNames('pa1', {
                 'black-40': idx != this.state.outlier,
-                'green': idx == this.state.outlier
+                'green': idx == this.state.outlier,
+                'red': this.state.errors.includes(word)
             })
 
             return (<p style={{ userSelect: 'none' }} className={css}>{word}</p>)
@@ -203,7 +210,7 @@ class App extends React.Component {
                                         id="length"
                                         value={this.state.length} 
                                         name="length" 
-                                        onChange={(e) => this.handleChange(e)}
+                                        onChange={this.handleChange}
                                         style={{ maxWidth: '40%', paddingLeft: '0.75rem', paddingRight: '0.75rem' }}
                                         className="flex-none bn br-pill b--black-20 pv1 ml2 outline-0 black-20" />
                                 </div>
@@ -216,7 +223,7 @@ class App extends React.Component {
                                         id="dist"
                                         value={this.state.dist} 
                                         name="dist" 
-                                        onChange={(e) => this.handleChange(e)}
+                                        onChange={this.handleChange}
                                         style={{ maxWidth: '40%', paddingLeft: '0.75rem', paddingRight: '0.75rem' }}
                                         className="flex-none bn br-pill b--black-20 pv1 ml2 outline-0 black-20" />
                                 </div>
@@ -235,7 +242,7 @@ class App extends React.Component {
                         onKeyUp={(e) => {
                             if (e.keyCode == 13) {
                                 if (this.state.submitted)
-                                    this.setState({ words: [e.target.value], submitted: false, outlier: -1 })
+                                    this.setState({ words: [e.target.value], submitted: false, outlier: -1, errors: [] })
                                 else
                                     this.setState({ words: [...this.state.words, e.target.value] })
 
@@ -245,6 +252,8 @@ class App extends React.Component {
                         style={{ maxWidth: '40%', border: 0, borderBottom: '.2rem solid #777' }}
                         className="f4 ph3 pt3 pb2 mid-gray outline-0 tc"/>
                     <div className="flex flex-row flex-wrap justify-center">{inputs}</div>
+                    {this.state.errors && 
+                    <p className="light-red i ma0">One or more of your words is not in the system vocabulary.</p>}
                     <button 
                         className="bn f4 dim br3 pa2 mv3 white bg-light-red" 
                         onClick={async () => {
@@ -255,7 +264,7 @@ class App extends React.Component {
                         }}>
                         Solve!
                     </button>
-                    {!this.state.submitted &&
+                    {(!this.state.submitted || this.state.errors) &&
                     <div className="w-100 mb5">
                         <p className="w-100 i black-40 tc mb2 mt0 lh-copy">Enter as many words as you like, then press Solve! The outlier will be highlighted in green. Entering a new word after a list has been solved will clear the current list.</p>
                         <div>
@@ -268,7 +277,7 @@ class App extends React.Component {
                         </div>
                     </div>}
                 </div>}
-                <div className={classNames('w-100 pa2 bg-black-20 bn br3 mv3', { 'dn': !this.state.submitted })}>
+                <div className={classNames('w-100 pa2 bg-black-20 bn br3 mv3', { 'dn': !this.state.submitted || this.state.errors })}>
                     <div className="relative w-100 pr1">
                         <canvas ref={this.chartRef}></canvas>
                     </div>

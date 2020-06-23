@@ -48,6 +48,15 @@ def cluster_similarities(tokens):
 def find_outlier(tokens):
     minsim = 2
     mini = -1
+    errors = []
+
+    for token in tokens:
+        if token.lower() not in word_to_index.keys():
+            errors.append(token)
+    
+    if len(errors) > 0:
+        return { 'errors': errors }
+
     sim = cluster_similarities(tokens)
     
     for i in range(len(sim)):
