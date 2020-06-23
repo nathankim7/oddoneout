@@ -47,9 +47,8 @@ The outlier is generated using a value designated as the *outlier distance*, or 
 
 ### Outlier Detection
 
-The site can detect outliers using the cluster prototype method introduced by [Santus et. al](https://www.aclweb.org/anthology/P18-2088/).
+The site can detect outliers using the cluster prototype method introduced by [Santus et. al](https://www.aclweb.org/anthology/P18-2088/): for each word, the similarity between itself and the centroid of the other word vectors in the set is calculated, and the word with the lowest such similarity is determined to be the outlier.
 
 ## Next Steps
 
-* Word vector visualization: the vectors of all the words in the question will be visualized relative to the root word on a unit circle quadrant based on their cosine distance, which will illustrate the impact of varying outlier distance.
 * Explore better similarity metrics, i.e. the APSynP metric introduced by [Santus et. al](https://www.aclweb.org/anthology/P18-2088/).
