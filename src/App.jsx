@@ -264,7 +264,7 @@ class App extends React.Component {
                         }}>
                         Solve!
                     </button>
-                    {(!this.state.submitted || this.state.errors) &&
+                    {(!this.state.submitted || this.state.errors.length > 0) &&
                     <div className="w-100 mb5">
                         <p className="w-100 i black-40 tc mb2 mt0 lh-copy">Enter as many words as you like, then press Solve! The outlier will be highlighted in green. Entering a new word after a list has been solved will clear the current list.</p>
                         <div>
@@ -277,7 +277,7 @@ class App extends React.Component {
                         </div>
                     </div>}
                 </div>}
-                <div className={classNames('w-100 pa2 bg-black-20 bn br3 mv3', { 'dn': !this.state.submitted || this.state.errors })}>
+                <div className={classNames('w-100 pa2 bg-black-20 bn br3 mv3', { 'dn': !this.state.submitted || this.state.errors.length > 0 })}>
                     <div className="relative w-100 pr1">
                         <canvas ref={this.chartRef}></canvas>
                     </div>
