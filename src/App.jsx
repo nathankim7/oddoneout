@@ -147,7 +147,7 @@ class App extends React.Component {
         })
 
         const inputs = this.state.words.map((word, idx) => {
-            var css = classNames('pa1', {
+            var css = classNames('pa1 ma0 mt3', {
                 'black-40': idx != this.state.outlier,
                 'green': idx == this.state.outlier,
                 'red': this.state.errors.includes(word)
@@ -252,8 +252,8 @@ class App extends React.Component {
                         style={{ maxWidth: '40%', border: 0, borderBottom: '.2rem solid #777' }}
                         className="f4 ph3 pt3 pb2 mid-gray outline-0 tc"/>
                     <div className="flex flex-row flex-wrap justify-center">{inputs}</div>
-                    {this.state.errors && 
-                    <p className="light-red i ma0">One or more of your words is not in the system vocabulary.</p>}
+                    {this.state.errors.length > 0 && 
+                    <p className="light-red i ma0 mt3">One or more of your words is not in the system vocabulary.</p>}
                     <button 
                         className="bn f4 dim br3 pa2 mv3 white bg-light-red" 
                         onClick={async () => {
