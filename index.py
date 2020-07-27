@@ -123,13 +123,15 @@ def generate():
     generator = request.args.get('generator')
     length = int(request.args.get('length'))
     dist = int(request.args.get('dist'))
+    startWord = request.args.get('start')
+    start = word_to_index[startWord] if startWord != '' else None
 
     tokens = []
 
     if generator == 'ann':
-        tokens = generate_ann(length, outlier_dist=dist)
+        tokens = generate_ann(length, outlier_dist=dist, start=start)
     elif generator == 'centroid':
-        tokens = generate_centroid(length, outlier_dist=dist)
+        tokens = generate_centroid(length, outlier_dist=dist, start=start)
     else:
         return Response(status=400)
 
